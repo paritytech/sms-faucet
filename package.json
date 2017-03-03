@@ -8,12 +8,11 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@parity/parity.js": "^0.2.120",
-    "body-parser": "^1.15.2",
-    "express": "^4.13.3",
-    "js-sha3": "^0.5.5",
-    "oo7": "^0.1.4",
-    "oo7-parity": "^0.1.4",
+    "@parity/parity.js": "^0.3.115",
+    "body-parser": "^1.17.0",
+    "express": "^4.15.0",
+    "js-sha3": "^0.5.7",
+    "oo7-parity": "file:../oo7-parity",
     "request": "^2.79.0"
   }
 }
