@@ -25,7 +25,8 @@ const address = '0x4d6Bb4ed029B33cF25D0810b029bd8B1A6bcAb7B';
 // TODO!!! UPDATE registry ABI in oo7-parity.js
 
 const BadgeABI = [{"constant":true,"inputs":[{"name":"_who","type":"address"},{"name":"_field","type":"string"}],"name":"getData","outputs":[{"name":"","type":"bytes32"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_who","type":"address"},{"name":"_field","type":"string"}],"name":"getAddress","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_who","type":"address"},{"name":"_field","type":"string"}],"name":"getUint","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_who","type":"address"}],"name":"certified","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"who","type":"address"}],"name":"Confirmed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"who","type":"address"}],"name":"Revoked","type":"event"}];
-let sms = bondsF.makeContract(bondsF.registry.lookupAddress('emailverification', 'A'), BadgeABI);
+let sms = bondsF.makeContract(bondsF.registry.lookupAddress('smsverification', 'A'), BadgeABI);
+let email = bondsF.makeContract(bondsF.registry.lookupAddress('emailverification', 'A'), BadgeABI);
 
 let banned = {
 };
@@ -37,10 +38,10 @@ function rain(who, to, res) {
 	if (who.match(/^0x[a-f0-9]{40}$/) && to.match(/^0x[a-f0-9]{40}$/)) {
 		if (!banned[who]) {
 			if (!past[who] || Date.now() - past[who] > 24 * 3600 * 1000) {
-				sms.certified(who).then(certified => {
-					if (certified) {
+				Bond.all([sms.certified(who), email.certified(who)]).then(([smscert, emailcert]) => {
+					if (smscert || emailcert) {
 						past[who] = Date.now();
-						apiK.eth.sendTransaction({ from: address, to: to, value: 50000000000000000000 })
+						apiK.eth.sendTransaction({ from: address, to: to, value: (smscert ? 5000000000000000000 : 0) + (emailcert ? 500000000000000000 : 0) })
 							.then(tx => res.end(`Kovan Ether on its way in transaction ${tx}`))
 							.catch(e => res.end(`Internal error: ${JSON.stringify(e)}`));
 					} else {
