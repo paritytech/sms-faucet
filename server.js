@@ -38,7 +38,7 @@ function rain(who, to, res) {
 	if (who.match(/^0x[a-f0-9]{40}$/) && to.match(/^0x[a-f0-9]{40}$/)) {
 		if (!banned[who]) {
 			if (!past[who] || Date.now() - past[who] > 24 * 3600 * 1000) {
-				Bond.all([sms.certified(who), email.certified(who)]).then(([smscert, emailcert]) => {
+				bondsF.TransformBond.all([sms.certified(who), email.certified(who)]).then(([smscert, emailcert]) => {
 					if (smscert || emailcert) {
 						past[who] = Date.now();
 						apiK.eth.sendTransaction({ from: address, to: to, value: (smscert ? 5000000000000000000 : 0) + (emailcert ? 500000000000000000 : 0) })
