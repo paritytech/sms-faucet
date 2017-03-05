@@ -42,7 +42,7 @@ function rain(who, to, res) {
 					if (smscert || emailcert) {
 						past[who] = Date.now();
 						apiK.eth.sendTransaction({ from: address, to: to, value: (smscert ? 5000000000000000000 : 0) + (emailcert ? 500000000000000000 : 0) })
-							.then(tx => res.end(`Kovan Ether on its way in transaction ${tx}`))
+							.then(tx => res.end(`Kovan Ether on its way in transaction https://kovan.etherscan.io/tx/${tx}`))
 							.catch(e => res.end(`Internal error: ${JSON.stringify(e)}`));
 					} else {
 						res.end('Account not certified');
