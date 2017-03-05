@@ -74,7 +74,7 @@ app.get('/:address/:to', function (req, res) {
 
 
 console.log("Start server...");
-var server = app.listen(4080, function () {
+var server = app.listen(80, function () {
 	var host = server.address().address;
 	var port = server.address().port;
 	console.log("sms-faucet service listening at http://%s:%s", host, port);
