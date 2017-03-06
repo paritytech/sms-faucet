@@ -64,13 +64,13 @@ app.get('/:address', function (req, res) {
 	let who = req.params.address.toLowerCase();
 	rain(who, who, res);
 });
-
+/*
 app.get('/:address/:to', function (req, res) {
 	let who = req.params.address.toLowerCase();
 	let to = req.params.to.toLowerCase();
 	rain(who, to, res);
 });
-
+*/
 
 
 console.log("Start server...");
