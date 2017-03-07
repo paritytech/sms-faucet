@@ -60,6 +60,12 @@ function rain(who, to, res) {
 	}
 }
 
+app.use(function(req, res, next) {
+	res.header('Access-Control-Allow-Origin', '*');
+	res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+	next();
+});
+
 app.get('/:address', function (req, res) {
 	let who = req.params.address.toLowerCase();
 	rain(who, who, res);
