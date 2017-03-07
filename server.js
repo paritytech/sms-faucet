@@ -77,10 +77,10 @@ app.get('/api/:address', function(req, res) {
 	let who = req.params.address.toLowerCase();
 	rain(who, who)
 		.then(function (result, tx) {
-			res.json({ result, tx })
+			res.json({ result: result, tx: tx })
 		})
 		.catch(function (error) {
-			res.json({ error });
+			res.json({ error: error });
 		});
 });
 
