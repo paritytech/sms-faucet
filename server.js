@@ -76,8 +76,8 @@ app.use(function(req, res, next) {
 app.get('/api/:address', function(req, res) {
 	let who = req.params.address.toLowerCase();
 	rain(who, who)
-		.then(function (result, hash) {
-			res.json({ result, hash })
+		.then(function (result, tx) {
+			res.json({ result, tx })
 		})
 		.catch(function (error) {
 			res.json({ error });
@@ -87,12 +87,8 @@ app.get('/api/:address', function(req, res) {
 app.get('/:address', function (req, res) {
 	let who = req.params.address.toLowerCase();
 	rain(who, who)
-		.then(function (result, txHash) {
-			if (txHash) {
-				res.end(`${result} https://kovan.etherscan.io/tx/${txHash}`);
-			} else {
-				res.end(result);
-			}
+		.then(function (result, tx) {
+			res.end(`${result} https://kovan.etherscan.io/tx/${tx}`);
 		})
 		.catch(function (error) {
 			res.end(error);
