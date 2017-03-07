@@ -36,6 +36,7 @@ let past = {
 
 const ETH_SMS = 5000000000000000000;
 const ETH_EMAIL = 500000000000000000;
+const REFILL_RATE = 24 * 3600 * 1000;
 
 function rain(who, to) {
 	return new Promise(function (resolve, reject) {
@@ -47,7 +48,7 @@ function rain(who, to) {
 			return reject('Account banned.');
 		}
 
-		if (past[who] && Date.now() - past[who] < 24 * 3600 * 1000) {
+		if (past[who] && Date.now() - past[who] < REFILL_RATE) {
 			return reject('Faucet draw rate limited. Call back in 24 hours.');
 		}
 
@@ -61,7 +62,7 @@ function rain(who, to) {
 				past[who] = Date.now();
 				apiK.eth
 					.sendTransaction({ from: address, to: to, value: (smscert ? ETH_SMS : 0) + (emailcert ? ETH_EMAIL : 0) })
-					.then(tx => resolve('Kovan Ether on its way in transaction', tx))
+					.then(tx => resolve({ result: 'Kovan Ether on its way in transaction', tx: tx }))
 					.catch(e => reject(`Internal error: ${JSON.stringify(e)}`));
 			});
 	});
@@ -76,8 +77,8 @@ app.use(function(req, res, next) {
 app.get('/api/:address', function(req, res) {
 	let who = req.params.address.toLowerCase();
 	rain(who, who)
-		.then(function (result, tx) {
-			res.json({ result: result, tx: tx })
+		.then(function (response) {
+			res.json(response);
 		})
 		.catch(function (error) {
 			res.json({ error: error });
@@ -87,8 +88,8 @@ app.get('/api/:address', function(req, res) {
 app.get('/:address', function (req, res) {
 	let who = req.params.address.toLowerCase();
 	rain(who, who)
-		.then(function (result, tx) {
-			res.end(`${result} https://kovan.etherscan.io/tx/${tx}`);
+		.then(function (response) {
+			res.end(`${response.result} https://kovan.etherscan.io/tx/${response.tx}`);
 		})
 		.catch(function (error) {
 			res.end(error);
