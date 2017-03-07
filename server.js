@@ -34,30 +34,37 @@ let banned = {
 let past = {
 };
 
-function rain(who, to, res) {
-	if (who.match(/^0x[a-f0-9]{40}$/) && to.match(/^0x[a-f0-9]{40}$/)) {
-		if (!banned[who]) {
-			if (!past[who] || Date.now() - past[who] > 24 * 3600 * 1000) {
-				bondsF.Transform.all([sms.certified(who), email.certified(who)]).then(([smscert, emailcert]) => {
-					if (smscert || emailcert) {
-						past[who] = Date.now();
-						apiK.eth.sendTransaction({ from: address, to: to, value: (smscert ? 5000000000000000000 : 0) + (emailcert ? 500000000000000000 : 0) })
-							.then(tx => res.end(`Kovan Ether on its way in transaction https://kovan.etherscan.io/tx/${tx}`))
-							.catch(e => res.end(`Internal error: ${JSON.stringify(e)}`));
-					} else {
-						res.end('Account not certified');
-					}
-				});
-			} else {
-				res.end('Faucet draw rate limited. Call back in 24 hours.');
-			}
+const ETH_SMS = 5000000000000000000;
+const ETH_EMAIL = 500000000000000000;
 
-		} else {
-			res.end('Account banned.');
+function rain(who, to) {
+	return new Promise(function (resolve, reject) {
+		if (!who.match(/^0x[a-f0-9]{40}$/) || !to.match(/^0x[a-f0-9]{40}$/)) {
+			return reject('Invalid address.');
 		}
-	} else {
-		res.end('Invalid address.');
-	}
+
+		if (banned[who]) {
+			return reject('Account banned.');
+		}
+
+		if (past[who] && Date.now() - past[who] < 24 * 3600 * 1000) {
+			return reject('Faucet draw rate limited. Call back in 24 hours.');
+		}
+
+		bondsF.Transform
+			.all([sms.certified(who), email.certified(who)])
+			.then(([smscert, emailcert]) => {
+				if (!smscert && !emailcert) {
+					return reject('Account not certified');
+				}
+
+				past[who] = Date.now();
+				apiK.eth
+					.sendTransaction({ from: address, to: to, value: (smscert ? ETH_SMS : 0) + (emailcert ? ETH_EMAIL : 0) })
+					.then(tx => resolve('Kovan Ether on its way in transaction', tx))
+					.catch(e => reject(`Internal error: ${JSON.stringify(e)}`));
+			});
+	});
 }
 
 app.use(function(req, res, next) {
@@ -66,9 +73,30 @@ app.use(function(req, res, next) {
 	next();
 });
 
+app.get('/api/:address', function(req, res) {
+	let who = req.params.address.toLowerCase();
+	rain(who, who)
+		.then(function (result, hash) {
+			res.json({ result, hash })
+		})
+		.catch(function (error) {
+			res.json({ error });
+		});
+});
+
 app.get('/:address', function (req, res) {
 	let who = req.params.address.toLowerCase();
-	rain(who, who, res);
+	rain(who, who)
+		.then(function (result, txHash) {
+			if (txHash) {
+				res.end(`${result} https://kovan.etherscan.io/tx/${txHash}`);
+			} else {
+				res.end(result);
+			}
+		})
+		.catch(function (error) {
+			res.end(error);
+		});
 });
 /*
 app.get('/:address/:to', function (req, res) {
