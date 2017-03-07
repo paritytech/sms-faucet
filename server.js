@@ -36,7 +36,7 @@ let past = {
 
 const ETH_SMS = 5000000000000000000;
 const ETH_EMAIL = 500000000000000000;
-const REFILL_RATE = 24 * 3600 * 1000;
+const REFILL_PERIOD = 24 * 3600 * 1000;
 
 function rain(who, to) {
 	return new Promise(function (resolve, reject) {
@@ -48,7 +48,7 @@ function rain(who, to) {
 			return reject('Account banned.');
 		}
 
-		if (past[who] && Date.now() - past[who] < REFILL_RATE) {
+		if (past[who] && Date.now() - past[who] < REFILL_PERIOD) {
 			return reject('Faucet draw rate limited. Call back in 24 hours.');
 		}
 
